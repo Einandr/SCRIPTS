@@ -1,0 +1,36 @@
+скрипт для VisIt, позволяющий построить расход:
+
+AddOperator("Slice", 0)
+SetActivePlots(0)
+SliceAtts = SliceAttributes()
+SliceAtts.originType = SliceAtts.Point  # Point, Intercept, Percent, Zone, Node
+
+xrange_min = -0.46
+xrange_max = 1.69
+npts = 50
+
+xstep=(xrange_max-xrange_min)/(npts-1)
+for i in range(0,npts):
+  x=xrange_min + i*xstep
+  SliceAtts.originPoint = (x, 0, 0)
+  SliceAtts.originIntercept = 0
+  SliceAtts.originPercent = 0
+  SliceAtts.originZone = 0
+  SliceAtts.originNode = 0
+  SliceAtts.normal = (-1, 0, 0)
+  SliceAtts.axisType = SliceAtts.XAxis  # XAxis, YAxis, ZAxis, Arbitrary, ThetaPhi
+  SliceAtts.upAxis = (1, 0, 0)
+  SliceAtts.project2d = 0
+  SliceAtts.interactive = 1
+  SliceAtts.flip = 0
+  SliceAtts.originZoneDomain = 0
+  SliceAtts.originNodeDomain = 0
+  SliceAtts.meshName = "F_MAIN/mesh"
+  SliceAtts.theta = 90
+  SliceAtts.phi = 0
+  SetOperatorOptions(SliceAtts, 0, 0)
+  DrawPlots()
+  res=Query("Weighted Variable Sum").split()[-1]
+  print(repr(x) + " " +res)
+  
+Копируется в "Commands", запускается при отрисованном трехмерном поле Umass (новая переменная, созданная через Expressions как произведение плотности на x-компоненту скорости)
