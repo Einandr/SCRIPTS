@@ -12,6 +12,142 @@ from scipy.interpolate import LinearNDInterpolator
 import matplotlib.animation as animation
 
 
+def create_animation_tracks(
+    anim_base_name: str,
+    ox_label: str,
+    oy_label: str,
+    filtered_tracks: list,
+    # aggregator,
+    # data_on_interval: dict,
+    # x_coord: np.ndarray,
+    params_config: list,
+    GOST: bool = True,
+    ox_limits: list = None,
+    line_width: int = 1,
+    vertical_lines: list = None,
+    horizontal_lines: list = None,
+    fps: int = 24,
+    output_name: str = None,
+    show_track_numbers: bool = False
+):
+    """
+    Создает анимацию для заданных параметров.
+
+    Args:
+        anim_base_name: Базовое имя для файла.
+        ox_label: Метка оси X.
+        oy_label: Метка оси Y.
+        filtered_tracks: список Dataframe данных для каждого трека
+        aggregator: Объект DataAggregator.
+        data_on_interval: Словарь с данными для анимации.
+        x_coord: Координаты по оси X.
+        params_config: Конфигурация параметров для анимации.
+            Пример:
+            [
+                {
+                    'averaged': (df_averaged, ['Temperature'], [style_average], ['осредненная'], y_limits['Temperature'], colors),
+                    'instant': (data_on_interval, ['Temperature'], [style_instant], ['мгновенная'], y_limits_default, colors)
+                },
+                {
+                    'averaged': (df_averaged, ['Y_air', 'Y_cp', 'Y_gpg'], [style_average]*3, ['осредненная - воздух', 'осредненная - ПС', 'осредненная - ГПГ'], y_limits['Y_air'], colors),
+                    'instant': (data_on_interval, ['Y_air', 'Y_cp', 'Y_gpg'], [style_instant]*3, ['мгновенная - воздух', 'мгновенная - ПС', 'мгновенная - ГПГ'], y_limits_default, colors)
+                }
+            ]
+        GOST: Применять ли ГОСТ-стиль.
+        ox_limits: Лимиты по оси OX.
+        line_width: Ширина линий.
+        fps: Частота кадров в секунду.
+        output_name: Имя выходного файла (если не указано, используется pic_base_name).
+        show_track_numbers: Показывать ли номера треков.
+    """
+    print(f"Анимация для файла с именем {output_name} ...")
+
+    if output_name is None:
+        output_name = anim_base_name
+
+    unique_tracks = filtered_tracks['track_id'].unique()
+    frames = len(unique_tracks)
+    print(f"📊 Найдено {frames} треков для анимации.")
+    min_track_id = filtered_tracks['track_id'].min()
+    track_counts = filtered_tracks.groupby('track_id').size()
+    max_points_track_id = track_counts.idxmax()
+    max_points = track_counts.max()
+    print(f"Track ID с максимальным числом точек: {max_points_track_id}")
+    print(f"Максимальное количество точек: {max_points}")
+    max_points_track_group = filtered_tracks[filtered_tracks['track_id'] == max_points_track_id]
+
+    fig, ax, lines = plot_result(
+        f"{anim_base_name}",
+        ox_label,
+        oy_label,
+        *params_config,
+        # x_values=x_coord,
+        GOST=GOST,
+        x_limits=ox_limits,
+        swap_axes=False,
+        line_width=line_width,
+        vertical_lines=vertical_lines,
+        horizontal_lines=horizontal_lines,
+        animation=True
+    )
+
+    for line in lines:
+        line.set_data(np.linspace(0, 0.1, max_points), np.zeros(max_points))
+
+    parameters = params_config[0][1]
+
+    if show_track_numbers:
+        text = ax.set_title(f'Номер трека: {min_track_id}', fontsize=12)
+
+    def animate(i):
+        # print('animation i is', i)
+        # current_track_id = min_track_id + i
+        current_track_id = unique_tracks[i]
+        current_track_df = filtered_tracks[filtered_tracks['track_id'] == current_track_id]
+
+        if current_track_df.empty:
+            print(f"⚠️ Нет данных для трека {current_track_id}")
+            return lines + [text]
+        for line, param in zip(lines, parameters):
+            x_data = current_track_df['time_local'].values
+            y_data = current_track_df[param].values
+            # Дополняем данные до max_points (если нужно)
+            if len(x_data) < max_points:
+                x_padded = np.pad(x_data, (0, max_points - len(x_data)), mode='edge')
+                y_padded = np.pad(y_data, (0, max_points - len(y_data)), mode='edge')
+                # print(x_padded)
+                # print(y_padded)
+            else:
+                x_padded = x_data[:max_points]
+                y_padded = y_data[:max_points]
+                # print(x_padded)
+                # print(y_padded)
+            line.set_data(x_padded, y_padded)
+        if show_track_numbers:
+            text.set_text(f'Номер трека: {current_track_id}')
+        return lines + [text]
+
+    ani = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=len(unique_tracks),
+        interval=1000/fps,
+        blit=True,
+        repeat=True
+    )
+
+    ani.save(f"{anim_base_name}{output_name}.mp4", writer='ffmpeg', fps=fps, dpi=200, bitrate=5000)
+    plt.close(fig)
+    return ani
+
+
+
+
+
+
+
+
+
 def create_animation(
     anim_base_name: str,
     x_label: str,
@@ -233,7 +369,9 @@ def plot_result(
             else:
                 line, = ax.plot(current_x_values, y_values, color=color, linestyle=style, label=label, markersize=2.5, markevery=200, linewidth=line_width)
                 print(f'добавил линию для параметра')
-            if animation and not is_static:
+            # if animation and not is_static:
+            #     lines.append(line)
+            if animation:
                 lines.append(line)
 
             if swap_axes:
@@ -258,15 +396,15 @@ def plot_result(
         elif axis_format == 'float':
             return f'{value:.2f}'.replace('.', ',')
         elif axis_format == 'scientific':
-            return f'{value:.2e}'.replace('.', ',').replace('e+0', 'e').replace('e-0', 'e-').replace('e', '·10^')
+            return f'{value:.3e}'.replace('.', ',').replace('e+0', 'e').replace('e-0', 'e-').replace('e', '·10^')
         else:  # auto
             if 1e-3 <= abs(value) < 1e5:
                 if value.is_integer():
                     return f'{int(value)}'
                 else:
-                    return f'{value:.2f}'.replace('.', ',')
+                    return f'{value:.3f}'.replace('.', ',')
             else:
-                return f'{value:.2e}'.replace('.', ',').replace('e+0', ' e').replace('e-0', ' e-').replace('e+', ' e+').replace('e-', ' e-')
+                return f'{value:.3e}'.replace('.', ',').replace('e+0', ' e').replace('e-0', ' e-').replace('e+', ' e+').replace('e-', ' e-')
 
     x_format = 'auto'
     y_format = 'auto'

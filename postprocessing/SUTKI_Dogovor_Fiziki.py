@@ -29,7 +29,7 @@ path = r'C:\Users\YA\Desktop\СУТКИ\Контрагенты\ДОГОВОРЫ_
 excel_file = 'Физики.xlsx'
 
 # Номер строки в EXCEL на кого делаем договор
-row_index = 14
+row_index = 18
 
 acceptance_certificate = False
 
