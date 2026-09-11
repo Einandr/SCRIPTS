@@ -29,7 +29,7 @@ path = r'C:\Users\YA\Desktop\СУТКИ\Контрагенты\ДОГОВОРЫ_
 excel_file = 'Физики.xlsx'
 
 # Номер строки в EXCEL на кого делаем договор
-row_index = 18
+row_index = 31
 
 acceptance_certificate = False
 
@@ -108,6 +108,7 @@ city = tenant.get('город', '')
 # Данные арендодателя
 landlord = {
     'имя': 'Яковчук Андрей Юрьевич',
+    'ИНН': '262409090402',
     'дата рождения': '20.10.1989',
     'паспорт': '0709 294154',
     'дата выдачи': '24.10.2009',
@@ -165,11 +166,12 @@ right_paragraph = right_cell.paragraphs[0]
 right_paragraph.text = date
 right_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
-
 # Добавляем абзац с данными сторон
 paragraph = doc_contract.add_paragraph()
 add_text(paragraph, "Гр. ")
 add_text(paragraph, f"{landlord.get('имя', '')}", bold=True)
+add_text(paragraph, f", ИНН: ")
+add_text(paragraph, f"{landlord.get('ИНН', '')}", bold=True)
 add_text(paragraph, f", паспорт: ")
 add_text(paragraph, f"{landlord.get('паспорт', '')}", bold=True)
 add_text(paragraph, f", выданный {landlord.get('дата выдачи', '')} г. {landlord.get('кем выдан', '')}, зарегистрированный по адресу: {landlord.get('индекс адреса', '')}, {landlord.get('адрес прописки', '')}, тел: {landlord.get('телефон', '')}, именуемый в дальнейшем «Арендодатель», с\u00A0одной стороны, и гр. ")
@@ -312,11 +314,13 @@ surname = full_name[0] if full_name else 'Unknown'
 # Форматируем дату заезда для названия файла
 date_str = pd.to_datetime(tenant['заезд']).strftime('%Y-%m-%d')
 
+apartment_address_str = tenant.get('адрес квартиры', '')
+
 # Создаем имя файла
-contract_filename_docx = f"Д_{surname}_{date_str}.docx"
+contract_filename_docx = f"Д_{surname}_{date_str}_{apartment_address_str}.docx"
 doc_contract.save(os.path.join(path, contract_filename_docx))
 
-contract_filename_pdf = f"Д_{surname}_{date_str}.pdf"
+contract_filename_pdf = f"Д_{surname}_{date_str}_{apartment_address_str}.pdf"
 convert_docx_to_pdf(
     os.path.join(path, contract_filename_docx),
     os.path.join(path, contract_filename_pdf)
@@ -488,10 +492,10 @@ if acceptance_certificate:
     # Создаем имя файла для АПП
     acceptance_certificate_surname = tenant.get('имя', '').split()[0]
     acceptance_certificate_date_str = pd.to_datetime(tenant['заезд']).strftime('%Y-%m-%d')
-    acceptance_certificate_filename_docx = f"А_{acceptance_certificate_surname}_{acceptance_certificate_date_str}.docx"
+    acceptance_certificate_filename_docx = f"А_{acceptance_certificate_surname}_{acceptance_certificate_date_str}_{apartment_address_str}.docx"
     doc_acceptance_certificate.save(os.path.join(path, acceptance_certificate_filename_docx))
 
-    acceptance_certificate_filename_pdf = f"А_{acceptance_certificate_surname}_{acceptance_certificate_date_str}.pdf"
+    acceptance_certificate_filename_pdf = f"А_{acceptance_certificate_surname}_{acceptance_certificate_date_str}_{apartment_address_str}.pdf"
     convert_docx_to_pdf(
         os.path.join(path, acceptance_certificate_filename_docx),
         os.path.join(path, acceptance_certificate_filename_pdf)
@@ -597,10 +601,10 @@ add_floating_image(p, 'подпись.png', width=Cm(5.5), x_offset=2500000, y_o
 # Создаем имя файла для расписки
 receipt_surname = tenant.get('имя', '').split()[0]
 receipt_date_str = pd.to_datetime(tenant['заезд']).strftime('%Y-%m-%d')
-receipt_filename_docx = f"Р_{receipt_surname}_{receipt_date_str}.docx"
+receipt_filename_docx = f"Р_{receipt_surname}_{receipt_date_str}_{apartment_address_str}.docx"
 doc_receipt.save(os.path.join(path, receipt_filename_docx))
 
-receipt_filename_pdf = f"Р_{receipt_surname}_{receipt_date_str}.pdf"
+receipt_filename_pdf = f"Р_{receipt_surname}_{receipt_date_str}_{apartment_address_str}.pdf"
 convert_docx_to_pdf(
     os.path.join(path, receipt_filename_docx),
     os.path.join(path, receipt_filename_pdf)

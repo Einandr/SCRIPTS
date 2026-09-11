@@ -1,0 +1,43 @@
+Auto-Transcript Start Time:  23:25:35, 13 Jul 2026 RTZ 2 (зима) 
+Current Directory: "D:\SCRIPTS\fluent_python"
+Information: The server has started and is running.
+
+              Welcome to ANSYS Fluent 2024 R2
+
+              Copyright 1987-2024 ANSYS, Inc. All Rights Reserved.
+              Unauthorized use, distribution or duplication is prohibited.
+              This product is subject to U.S. laws governing export and re-export.
+              For full Legal Notice, see documentation.
+
+Build Time: Aug 16 2024 11:46:31 EST  Build Id: 10193  
+ 
+Connected License Server List:	1055@localhost
+Host spawning Node 0 on machine "DESKTOP-7Q5DDUI" (win64).
+
+------------------------------------------------------------------------------------------
+ID    Hostname         Core  O.S.         PID    Vendor                                  
+------------------------------------------------------------------------------------------
+n7    DESKTOP-7Q5DDUI  8/16  Windows-x64  4000   AMD Ryzen 7 5800H with Radeon Graphics  
+n6    DESKTOP-7Q5DDUI  7/16  Windows-x64  12864  AMD Ryzen 7 5800H with Radeon Graphics  
+n5    DESKTOP-7Q5DDUI  6/16  Windows-x64  15740  AMD Ryzen 7 5800H with Radeon Graphics  
+n4    DESKTOP-7Q5DDUI  5/16  Windows-x64  10880  AMD Ryzen 7 5800H with Radeon Graphics  
+n3    DESKTOP-7Q5DDUI  4/16  Windows-x64  10900  AMD Ryzen 7 5800H with Radeon Graphics  
+n2    DESKTOP-7Q5DDUI  3/16  Windows-x64  11780  AMD Ryzen 7 5800H with Radeon Graphics  
+n1    DESKTOP-7Q5DDUI  2/16  Windows-x64  27816  AMD Ryzen 7 5800H with Radeon Graphics  
+n0*   DESKTOP-7Q5DDUI  1/16  Windows-x64  34720  AMD Ryzen 7 5800H with Radeon Graphics  
+host  DESKTOP-7Q5DDUI        Windows-x64  33736  AMD Ryzen 7 5800H with Radeon Graphics  
+
+MPI Option Selected: intel
+Selected system interconnect: default
+------------------------------------------------------------------------------------------
+
+Cleanup script file is D:\\SCRIPTS\\fluent_python\\cleanup-fluent-DESKTOP-7Q5DDUI-33736.bat
+(set-session-idle-timeout 3)countdown-start-timer
+
+> Shutting down Server...
+Services Shutdown...Done.
+Server Shutdown...Done.
+Queue Cleared...Done.
+Shutdown Complete.
+Auto-Transcript Stop Time:  23:25:54, 13 Jul 2026 RTZ 2 (зима) 
+Total Transcript Time: 0 Minute 19 Second.

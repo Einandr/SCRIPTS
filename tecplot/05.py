@@ -1,0 +1,248 @@
+import tecplot as tp
+from tecplot.exception import *
+from tecplot.constant import *
+
+# Uncomment the following line to connect to a running instance of Tecplot 360:
+# tp.session.connect()
+
+tp.active_frame().plot(PlotType.Cartesian3D).show_isosurfaces=True
+tp.active_frame().plot().contour(1).variable_index=53
+tp.active_frame().plot().isosurface(0).definition_contour_group_index=1
+tp.active_frame().plot().isosurface(0).isosurface_values[0]=0.85
+tp.macro.execute_command('$!RedrawAll')
+tp.active_frame().plot().isosurface(0).isosurface_values[0]=0.085
+tp.macro.execute_command('$!RedrawAll')
+tp.active_frame().plot().view.psi=64.192
+tp.active_frame().plot().view.theta=89.8522
+tp.active_frame().plot().view.alpha=-11.7852
+tp.active_frame().plot().view.position=(-1.15847,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.0454991,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.590881)
+tp.active_frame().plot().view.width=0.298051
+tp.active_frame().plot().view.psi=105.965
+tp.active_frame().plot().view.theta=96.7718
+tp.active_frame().plot().view.alpha=-25.0039
+tp.active_frame().plot().view.position=(-1.25,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.11357,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.33728)
+tp.active_frame().plot().view.width=0.298051
+tp.active_frame().plot().view.psi=89.1005
+tp.active_frame().plot().view.theta=99.9463
+tp.active_frame().plot().view.alpha=-21.175
+tp.active_frame().plot().view.position=(-1.28437,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.189594,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.0451619)
+tp.active_frame().plot().view.width=0.298051
+tp.active_frame().plot().view.position=(-1.28437,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.189594,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.0451619)
+tp.active_frame().plot().view.width=0.388471
+tp.active_frame().plot().view.psi=84.5391
+tp.active_frame().plot().view.theta=95.4934
+tp.active_frame().plot().view.alpha=-21.8061
+tp.active_frame().plot().view.position=(-1.28734,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.0870772,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.15042)
+tp.active_frame().plot().view.width=0.388471
+tp.macro.execute_command('$!RedrawAll')
+tp.active_frame().plot().view.position=(-1.29079,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.094725,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.106898)
+tp.active_frame().plot().view.width=0.388471
+tp.active_frame().plot().view.position=(-1.29079,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.094725,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.106898)
+tp.active_frame().plot().view.width=0.311558
+tp.active_frame().plot().view.position=(-1.30468,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.0805028,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.023531)
+tp.active_frame().plot().view.width=0.311558
+tp.active_frame().plot().view.position=(-1.30468,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.0805028,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.023531)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.position=(-1.29044,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.0851785,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.120099)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=120.998
+tp.active_frame().plot().view.theta=69.4518
+tp.active_frame().plot().view.alpha=-9.99596
+tp.active_frame().plot().view.position=(-1.01709,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.431223,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.691952)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=137.461
+tp.active_frame().plot().view.theta=139.346
+tp.active_frame().plot().view.alpha=34.7952
+tp.active_frame().plot().view.position=(-0.554802,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.644893,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.99817)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=94.2581
+tp.active_frame().plot().view.theta=166.019
+tp.active_frame().plot().view.alpha=63.8077
+tp.active_frame().plot().view.position=(-0.292524,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    1.27551,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.139147)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=73.7885
+tp.active_frame().plot().view.theta=132.658
+tp.active_frame().plot().view.alpha=62.5
+tp.active_frame().plot().view.position=(-0.917453,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.868163,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.329057)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=87.3389
+tp.active_frame().plot().view.theta=92.9052
+tp.active_frame().plot().view.alpha=80.7265
+tp.active_frame().plot().view.position=(-1.29597,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    0.0812704,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    0.0226393)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=89.6961
+tp.active_frame().plot().view.theta=74.6046
+tp.active_frame().plot().view.alpha=90.7463
+tp.active_frame().plot().view.position=(-1.25634,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.330511,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.0286232)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=99.4232
+tp.active_frame().plot().view.theta=76.0088
+tp.active_frame().plot().view.alpha=89.7759
+tp.active_frame().plot().view.position=(-1.24074,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.293887,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.251697)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=110.368
+tp.active_frame().plot().view.theta=61.9571
+tp.active_frame().plot().view.alpha=87.9929
+tp.active_frame().plot().view.position=(-1.06787,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.559149,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.493902)
+tp.active_frame().plot().view.width=0.362727
+tp.active_frame().plot().view.psi=113.914
+tp.active_frame().plot().view.theta=47.3625
+tp.active_frame().plot().view.alpha=75.1734
+tp.active_frame().plot().view.position=(-0.860776,
+    tp.active_frame().plot().view.position[1],
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    -0.798988,
+    tp.active_frame().plot().view.position[2])
+tp.active_frame().plot().view.position=(tp.active_frame().plot().view.position[0],
+    tp.active_frame().plot().view.position[1],
+    -0.571786)
+tp.active_frame().plot().view.width=0.362727
+tp.macro.execute_command('$!RedrawAll')
+tp.macro.execute_command('$!RedrawAll')
+# End Macro.
+

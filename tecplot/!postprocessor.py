@@ -32,8 +32,9 @@ from utils import *
 # from moviepy.editor import VideoFileClip, ImageClip, clips_array
 # logging.basicConfig(level=logging.DEBUG)
 
+#TODO добавить автоматизацию экспорта частиц для КУБа - из отдельного файла, с указанием сетки сгнс
 
-config_path = r'D:\SCRIPTS\tecplot\config_iskra_high.ini'
+config_path = r'D:\SCRIPTS\tecplot\config_iskra_validation.ini'
 
 
 time_start = datetime.datetime.now()
@@ -91,7 +92,7 @@ cff = case_name.endswith('.h5') and data_name_start.endswith('.h5') and data_nam
 data_qubiq = conf.get('file', 'data_qubiq')
 
 # Директории
-path_case_data = conf.get('path', 'path_case_data')
+path_data_fluent = conf.get('path', 'path_data_fluent')
 path_data_qubiq = conf.get('path', 'path_data_qubiq')
 
 dir_slices = conf.get('path', 'dir_slices')
@@ -101,16 +102,15 @@ dir_current_run = 'run'
 
 match solver:
     case Solver.FLUENT:
-        path_save_slices = ''.join((path_case_data, '/', dir_current_run, '/', dir_slices))
-        path_save_pictures = ''.join((path_case_data, '/', dir_current_run, '/', dir_pictures))
-        path_save_movies = ''.join((path_case_data, '/', dir_current_run, '/', dir_movies))
+        path_save_slices = ''.join((path_data_fluent, '/', dir_current_run, '/', dir_slices))
+        path_save_pictures = ''.join((path_data_fluent, '/', dir_current_run, '/', dir_pictures))
+        path_save_movies = ''.join((path_data_fluent, '/', dir_current_run, '/', dir_movies))
     case Solver.QUBIQ:
         path_save_slices = ''.join((path_data_qubiq, '/', dir_current_run, '/', dir_slices))
         path_save_pictures = ''.join((path_data_qubiq, '/', dir_current_run, '/', dir_pictures))
         path_save_movies = ''.join((path_data_qubiq, '/', dir_current_run, '/', dir_movies))
     case _:
         raise ValueError(f"Неподдерживаемый решатель: {solver}")
-
 
 Path(path_save_slices).mkdir(parents=True, exist_ok=True)
 os.chdir(path_save_slices)
@@ -132,6 +132,7 @@ rotation_angles = literal_eval(conf.get('geom', 'rotation_angles'))
 frame_width = conf.getfloat('geom', 'frame_width')
 frame_height = conf.getfloat('geom', 'frame_height')
 view_width = conf.getfloat('geom', 'view_width')
+view_fit = conf.getboolean('geom', 'view_fit')
 
 # Переменные для вывода на экран
 variables_plot = convert_to_tuple(conf.get('variables', 'variables_plot'))
@@ -163,18 +164,18 @@ if reload_data:
 
             # Создание списка имен файлов для загрузки (с расширением на множество кейсов если будет подвижная сетка)
             # Список case файлов
-            case_file_names = [''.join((path_case_data, '/', case_name))]
+            case_file_names = [''.join((path_data_fluent, '/', case_name))]
             print('Список case файлов:')
             for x in range(len(case_file_names)):
                 print(case_file_names[x])
 
             # Список data файлов
             data_file_names = []
-            names = os.listdir(path_case_data)
+            names = os.listdir(path_data_fluent)
             data_name = data_name_start
             for name in names:
                 if data_name_start <= name <= data_name_end:
-                    new_element = ''.join((path_case_data, '/', name))
+                    new_element = ''.join((path_data_fluent, '/', name))
                     data_file_names.append(new_element)
             print('Список data файлов:')
             for x in range(len(data_file_names)):
@@ -230,10 +231,13 @@ else:
 # переключение на последний временной шаг
 tp.macro.execute_command(''.join(('$!GlobalTime SolutionTime = ', str(solution_time_end))))
 
-# Формирование списка компонент
-species = parse_species(dataset, solver)
+
 # Переименование переменных
 rename_variables(dataset, solver)
+
+# Формирование списка компонент
+species = parse_species(dataset, solver)
+
 
 # Удаление неиспользуемых переменных
 all_variables = dataset.variables()
@@ -310,7 +314,10 @@ tp.active_frame().plot().frame.width = frame_width
 tp.active_frame().plot().frame.height = frame_height
 tp.active_frame().plot().frame.show_border = False
 set_rotation_angles((0, 0, 0))
-tp.active_frame().plot().view.width = view_width
+if view_fit:
+    tp.active_frame().plot().view.fit_data(consider_blanking=True)
+else:
+    tp.active_frame().plot().view.width = view_width
 tp.macro.execute_command('$!WorkspaceView FitAllFrames')
 
 # При повторном запуске - удаляем ранее созданные зоны на поперечных сечениях
@@ -424,13 +431,19 @@ if pictures or movies:
             if pictures:
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
                     pic_name = f"contour_{view['suffix']}_{var_name}"
                     save_image(path_save_pictures, pic_name)
             if movies:
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
                     pic_name = f"contour_{view['suffix']}_{var_name}"
                     export_movie(path_save_movies, pic_name, start_time, end_time)
 
@@ -442,13 +455,19 @@ if pictures or movies:
             if pictures:
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
                     pic_name = f"contour_{view['suffix']}_{var_name}"
                     save_image(path_save_pictures, pic_name)
             if movies:
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
                     pic_name = f"contour_{view['suffix']}_{var_name}"
                     export_movie(path_save_movies, pic_name, start_time, end_time)
 
@@ -467,7 +486,10 @@ print(f'Всего сечений для экспорта НЕСТАЦИОНАР
 
 
 set_rotation_angles(rotation_angles)
-tp.active_frame().plot().view.width = view_width
+if view_fit:
+    tp.active_frame().plot().view.fit_data(consider_blanking=True)
+else:
+    tp.active_frame().plot().view.width = view_width
 
 # Экспорт рисунков на поперечных сечениях
 if pictures:
@@ -490,7 +512,10 @@ if pictures:
 if particles:
     # if pictures or movies:
     set_rotation_angles((0, 0, 0))
-    tp.active_frame().plot().view.width = view_width
+    if view_fit:
+        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+    else:
+        tp.active_frame().plot().view.width = view_width
     tp.active_frame().plot(PlotType.Cartesian3D).show_slices = False
     tp.active_frame().plot().show_scatter = True
 
@@ -506,12 +531,18 @@ if particles:
         if plot_variable(dataset, var_name, var_min, var_max, var_increment, slice='Z', shade=True):
             tp.active_frame().plot(PlotType.Cartesian3D).show_slices = False
             set_rotation_angles((0, 0, 0))
-            tp.active_frame().plot().view.width = view_width
+            if view_fit:
+                tp.active_frame().plot().view.fit_data(consider_blanking=True)
+            else:
+                tp.active_frame().plot().view.width = view_width
             pic_name = ''.join(('particles_xy_', var_name))
             save_image(path_save_pictures, pic_name)
             export_movie(path_save_movies, pic_name, start_time, end_time)
             set_rotation_angles((90, 180, 180))
-            tp.active_frame().plot().view.width = view_width
+            if view_fit:
+                tp.active_frame().plot().view.fit_data(consider_blanking=True)
+            else:
+                tp.active_frame().plot().view.width = view_width
             pic_name = ''.join(('particles_xz_', var_name))
             save_image(path_save_pictures, pic_name)
             export_movie(path_save_movies, pic_name, start_time, end_time)
@@ -706,7 +737,10 @@ if average_3d_fields:
     # Экспорт рисунков на продольном сечении
     if pictures:
         set_rotation_angles((0, 0, 0))
-        tp.active_frame().plot().view.width = view_width
+        if view_fit:
+            tp.active_frame().plot().view.fit_data(consider_blanking=True)
+        else:
+            tp.active_frame().plot().view.width = view_width
         # Отрисовка полей основных переменных
         for var_name, legend_text, var_min, var_max, var_increment in zip(variables_plot, variables_legend, variables_min, variables_max, variables_increment):
             current_var_name = f"{prefix}{var_name}"
@@ -728,7 +762,10 @@ if average_3d_fields:
             if plot_variable(dataset, current_var_name, var_min, var_max, var_increment):
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
                     pic_name = f"contour_av_{view['suffix']}_{var_name}"
                     save_image(path_save_pictures, pic_name)
 
@@ -737,16 +774,22 @@ if average_3d_fields:
             var_name = f'Y_{sp}'
             current_var_name = f"{prefix}{var_name}"
             if plot_variable(dataset, current_var_name, 0, sp_ymax, sp_increment):
-                pic_name = ''.join(('contour_', var_name))
+                pic_name = ''.join(('contour_av_', var_name))
                 for view in views:
                     set_rotation_angles(view['angles'])
-                    tp.active_frame().plot().view.width = view_width
-                    pic_name = f"contour_{view['suffix']}_{var_name}"
+                    if view_fit:
+                        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+                    else:
+                        tp.active_frame().plot().view.width = view_width
+                    pic_name = f"contour_av_{view['suffix']}_{var_name}"
                     save_image(path_save_pictures, pic_name)
 
     print('Установка поперечных сечений...')
     set_rotation_angles(rotation_angles)
-    tp.active_frame().plot().view.width = view_width
+    if view_fit:
+        tp.active_frame().plot().view.fit_data(consider_blanking=True)
+    else:
+        tp.active_frame().plot().view.width = view_width
 
     # Экспорт рисунков на поперечных сечениях
     if pictures:

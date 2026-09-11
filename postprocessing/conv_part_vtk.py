@@ -2,12 +2,14 @@ import os
 import re
 import pandas as pd
 import vtk
+from glob import glob
 
 
 
-path = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\QUBIQ\T1000K_freq10000_comb_v0.0ms_pmfr0.00000179\part'
+path = r'D:\YASIM\VORON\2026_12_Iskra_OPZ\QUBIQ\validation_from_oleg_1st\part'
 file_vtk = 'my_xyz_export_time_0.139403.vtk'
-discretization_step = 0.1
+discretization_step = 0.01
+columns_to_average = ['diameter']
 
 
 def vtk_to_csv(vtk_file, output_dir="."):
@@ -17,8 +19,8 @@ def vtk_to_csv(vtk_file, output_dir="."):
 
         Args:
             vtk_file (str): Путь к VTK-файлу.
-            output_dir (str): Папка для сохранения XYZ-файла.
-        """
+            output_dir (str): Папка для сохранения CSV-файла.
+    """
     reader = vtk.vtkPolyDataReader()
     reader.SetFileName(vtk_file)
     reader.Update()
@@ -64,58 +66,78 @@ def vtk_to_csv(vtk_file, output_dir="."):
             f.write(" ".join(row) + "\n")
 
     print(f"Файл {vtk_file} успешно сконвертирован в {csv_file} со всеми данными.")
+    return csv_path
+
+
+def process_subdirectory(subdir, parent_dir):
+    vtk_files = glob(os.path.join(subdir, '*.vtk'))
+    if not vtk_files:
+        print(f"⚠️ В папке {subdir} нет VTK-файлов.")
+        return
+
+    csv_files = []
+    for vtk_file in vtk_files:
+        csv_path = vtk_to_csv(vtk_file, subdir)
+        if csv_path:
+            csv_files.append(csv_path)
+
+    if not csv_files:
+        print(f"❌ Не удалось сконвертировать VTK-файлы в папке {subdir}.")
+        return
+
+    # Объединяем все CSV-файлы в подпапке в один
+    all_dfs = []
+    for csv_file in csv_files:
+        try:
+            df = pd.read_csv(csv_file, sep='\s+', engine='python')
+            all_dfs.append(df)
+        except Exception as e:
+            print(f"❌ Ошибка при чтении файла {csv_file}: {e}")
+
+    if not all_dfs:
+        print(f"❌ Не удалось прочитать ни один CSV-файл в папке {subdir}.")
+        return
+
+    combined_df = pd.concat(all_dfs, ignore_index=True)
+    output_file = os.path.join(parent_dir, f"{os.path.basename(subdir)}.csv")
+    combined_df.to_csv(output_file, sep=' ', index=False)
+    print(f"✅ Все данные в папке {subdir} объединены в файл: {output_file}")
+
+    # Удаляем временные CSV-файлы
+    for csv_file in csv_files:
+        try:
+            os.remove(csv_file)
+            print(f"✅ Удалён временный файл: {csv_file}")
+        except Exception as e:
+            print(f"⚠️ Не удалось удалить временный файл {csv_file}: {e}")
+
+    # --- Осреднение по интервалам X ---
+    combined_df['X_interval'] = (combined_df['X'] / discretization_step).astype(int)
+    agg_dict = {col: 'mean' for col in columns_to_average}
+    grouped_data = combined_df.groupby('X_interval').agg(agg_dict).reset_index()
+    data_averaged = grouped_data.rename(columns={'X_interval': 'Interval'})
+    data_averaged['X'] = data_averaged['Interval'] * discretization_step
+    data_averaged = data_averaged.drop(columns=['Interval'])
+    output_file_averaged = os.path.join(parent_dir, f"{os.path.basename(subdir)}_averaged.csv")
+    data_averaged.to_csv(output_file_averaged, sep=' ', index=False)
+    print(f"✅ Осреднённые данные из папки {subdir} сохранены в: {output_file_averaged}")
+
+
+def process_directory(root_dir):
+    for root, dirs, files in os.walk(root_dir):
+        for subdir in dirs:
+            subdir_path = os.path.join(root, subdir)
+            process_subdirectory(subdir_path, root)
+
 
 
 os.chdir(path)
 # vtk_to_csv(file_vtk)
+process_directory(path)
 
-vtk_files = [f for f in os.listdir() if f.endswith('.vtk')]
-for vtk_file in vtk_files:
-    vtk_to_csv(vtk_file)
-
-
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-# # СВЕРЯТЬ ПОРЯДОК С ХУЗ ФАЙЛОМ
-# names = ['unknown', 'CoordinateX', 'CoordinateY', 'CoordinateZ', 'Diameter', 'Temperature']
-# # names = ['unknown', 'CoordinateX', 'CoordinateY', 'CoordinateZ', 'Temperature', 'Diameter']
-#
-# os.chdir(path)
-# data = pd.read_csv(file_xyz, delimiter='\t', names=names, index_col=False, skiprows=2)
-# data.drop(columns=['unknown'], inplace=True)
-# data.sort_values(by='CoordinateX', inplace=True)
-# data.to_csv('points_for_tecplot_QUBIQ.csv', index=False)
-#
-#
-#
-# # Дискретизация по ОХ с шагом discretization_step
-#
-# data['X_interval'] = (data['CoordinateX'] / discretization_step).astype(int)
-#
-# # Группировка данных по интервалам и вычисление средних значений
-# grouped_data = data.groupby('X_interval').agg({'Diameter': 'mean', 'Temperature': 'mean'}).reset_index()
-#
-# # Создание нового DataFrame с осредненными значениями
-# data_averaged = grouped_data.rename(columns={'X_interval': 'Interval'})
-# data_averaged['CoordinateX'] = data_averaged['Interval'] * discretization_step
-#
-# # Удаление вспомогательного столбца
-# data_averaged = data_averaged.drop(columns=['Interval'])
-# data_averaged.to_csv('points_averaged_QUBIQ.csv', index=False)
-#
-
-
+# vtk_files = [f for f in os.listdir() if f.endswith('.vtk')]
+# for vtk_file in vtk_files:
+#     vtk_to_csv(vtk_file)
 
 
 

@@ -29,8 +29,7 @@ path_verification = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\verification'
 dir_verification = 'run'
 
 if verify_QUBIQ:
-    # path_qubiq_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\QUBIQ\T1000K_freq100_vap_v0.0ms_pmfr0.00000179\tracks\averaged_data.csv'
-    path_qubiq_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\QUBIQ\T1000K_freq10000_comb_v0.0ms_pmfr0.00000179\part\tracks\averaged_data.csv'
+    path_qubiq_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\QUBIQ\T1000K_freq100_comb_v0.0ms_pmfr0.00000000179\part\tracks\averaged_data.csv'
 if verify_gas:
     # path_qubiq_gas_01 = r'D:\YASIM\VORON\2026_12_Iskra_OPZ\QUBIQ\LES\data_averaged_QUBIQ_3D.csv'
     # path_qubiq_gas_01 = r'D:\YASIM\VORON\2026_12_Iskra_OPZ\QUBIQ\LES\Integration_results\slice_integration\combined_results.csv'
@@ -38,8 +37,7 @@ if verify_gas:
 
 
 if verify_FLUENT:
-    # path_fluent_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\FLUENT\all_results_dpm_output\T1000K_freq100_vap_v0.0ms_pmfr0.00000179_ts1e-5\tracks\averaged_data.csv'
-    path_fluent_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\FLUENT\T1000K_freq10000_comb_v0.0ms_pmfr0.00000179_ts1e-5_Direct\tracks\averaged_data.csv'
+    path_fluent_particles_01 = r'D:\YASIM\VORON\2026_15_Spalding_Combustion\FLUENT\T1000K_freq100_comb_v0.0ms_pmfr0.00000000179_DIRECT\tracks\averaged_data.csv'
 
 
 if verify_gas:
@@ -97,7 +95,7 @@ x_limit_high = 1.7
 # x_limit = 0.4
 
 t_limit_low = 0
-t_limit_high = 0.01
+t_limit_high = 0.006
 
 # iskra OPZ hot low
 # mfr_fuel_particles_in = 0.495

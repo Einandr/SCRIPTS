@@ -259,6 +259,8 @@ def plot_variable(dataset, variable_name, variable_min, variable_max, variable_i
         tp.active_frame().plot().show_contour = False
     else:
         tp.active_frame().plot().show_contour = True
+        tp.active_frame().plot().fieldmaps(dataset.zones()).contour.show = True
+        tp.active_frame().plot().fieldmaps(dataset.zones()).surfaces.surfaces_to_plot = SurfacesToPlot.BoundaryFaces
         tp.active_frame().plot(PlotType.Cartesian3D).show_slices = False
         tp.active_frame().plot(PlotType.Cartesian3D).use_translucency = False
 

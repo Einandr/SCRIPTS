@@ -32,11 +32,13 @@ pylab.rcParams.update(params)
 plt.rcParams['animation.ffmpeg_path'] = r'C:\Users\YA\Downloads\ffmpeg-8.1.1-full_build\bin\ffmpeg.exe'
 
 
-parameters_to_plot = ['diameter', 'mass', 'temperature', 'density']
+parameters_to_plot = ['diameter']
+# parameters_to_plot = ['diameter', 'mass', 'temperature', 'density']
 # \parameters_to_plot = ['diameter', 'mass', 'temperature', 'density', 'velocity_x', 'velocity_y', 'velocity_z', 'velocity']
 
 save_tracks_by_Track_ID = False
 animate_tracks = True
+animate_by_string = 'TRACK_ID'
 solver_string = 'FLUENT'
 # solver_string = 'QUBIQ'
 

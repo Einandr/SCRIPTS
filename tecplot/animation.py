@@ -32,6 +32,7 @@ from ast import literal_eval
 from PIL import Image
 from data_loader import *
 
+from utils import *
 from postprocessing.utils import plot_result, create_animation
 
 # im = Image.open('movie_plots_etta_G_fuel.gif')
@@ -64,15 +65,25 @@ print('Время старта:', time_start)
 conf = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
 conf.read(config_path, encoding='utf-8')
 
+solver = Solver[conf.get('mode', 'solver', fallback='FLUENT').upper()]
+
 # Директории
-path_all_slices = conf.get('path', 'path_all_slices')
-path_plots_and_animations = conf.get('path', 'path_plots_and_animations')
+dir_all_slices = conf.get('path', 'dir_all_slices')
+dir_plots_and_animations = conf.get('path', 'dir_plots_and_animations')
 dir_current_run_plots_and_animations = conf.get('path', 'dir_current_run_plots_and_animations')
 dir_plots = conf.get('path', 'dir_plots')
 dir_animations = conf.get('path', 'dir_animations')
 
-path_save_plots = ''.join((path_plots_and_animations, '/', dir_current_run_plots_and_animations, '/', dir_plots))
-path_save_animations = ''.join((path_plots_and_animations, '/', dir_current_run_plots_and_animations, '/', dir_animations))
+match solver:
+    case Solver.FLUENT:
+        path_root = conf.get('path', 'path_case_data_fluent')
+    case Solver.QUBIQ:
+        path_root = conf.get('path', 'path_data_qubiq')
+    case _:
+        raise ValueError(f"Неподдерживаемый решатель: {solver}")
+
+path_save_plots = ''.join((path_root, '/', dir_plots_and_animations, '/', dir_current_run_plots_and_animations, '/', dir_plots))
+path_save_animations = ''.join((path_root, '/', dir_plots_and_animations, '/', dir_current_run_plots_and_animations, '/', dir_animations))
 Path(path_save_plots).mkdir(parents=True, exist_ok=True)
 Path(path_save_animations).mkdir(parents=True, exist_ok=True)
 os.chdir(path_save_plots)
@@ -82,7 +93,7 @@ mass_flow_rate = conf.getboolean('mode', 'mass_flow_rate')
 combustion_efficiency_species = conf.getboolean('mode', 'combustion_efficiency_species')
 
 
-aggregator = DataAggregator(work_path=path_all_slices)
+aggregator = DataAggregator(work_path=dir_all_slices)
 
 time = aggregator.time
 x_coord = aggregator.x_coord

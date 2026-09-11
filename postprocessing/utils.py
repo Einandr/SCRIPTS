@@ -11,8 +11,22 @@ from scipy.interpolate import interp1d, griddata
 from scipy.interpolate import LinearNDInterpolator
 import matplotlib.animation as animation
 
+class AnimateBy(Enum):
+    TRACK_ID = auto()
+    TIME = auto()
+
+
+# match animate_by:
+#     case AnimateBy.TRACK_ID:
+#
+#     case AnimateBy.TIME:
+#
+#     case _:
+#         raise ValueError(f"Неподдерживаемый тип анимации: {animate_by}")
+
 
 def create_animation_tracks(
+    animate_by: AnimateBy,
     anim_base_name: str,
     ox_label: str,
     oy_label: str,
@@ -28,7 +42,7 @@ def create_animation_tracks(
     horizontal_lines: list = None,
     fps: int = 24,
     output_name: str = None,
-    show_track_numbers: bool = False
+    show_track_numbers_or_time: bool = False
 ):
     """
     Создает анимацию для заданных параметров.
@@ -58,24 +72,36 @@ def create_animation_tracks(
         line_width: Ширина линий.
         fps: Частота кадров в секунду.
         output_name: Имя выходного файла (если не указано, используется pic_base_name).
-        show_track_numbers: Показывать ли номера треков.
+        show_track_numbers_or_time: Показывать ли номера треков или время.
     """
     print(f"Анимация для файла с именем {output_name} ...")
 
     if output_name is None:
         output_name = anim_base_name
 
-    unique_tracks = filtered_tracks['track_id'].unique()
-    frames = len(unique_tracks)
-    print(f"📊 Найдено {frames} треков для анимации.")
-    min_track_id = filtered_tracks['track_id'].min()
-    track_counts = filtered_tracks.groupby('track_id').size()
-    max_points_track_id = track_counts.idxmax()
-    max_points = track_counts.max()
-    print(f"Track ID с максимальным числом точек: {max_points_track_id}")
-    print(f"Максимальное количество точек: {max_points}")
-    max_points_track_group = filtered_tracks[filtered_tracks['track_id'] == max_points_track_id]
-
+    match animate_by:
+        case AnimateBy.TRACK_ID:
+            unique_tracks = filtered_tracks['track_id'].unique()
+            frames = len(unique_tracks)
+            print(f"📊 Найдено {frames} треков для анимации.")
+            min_track_id = filtered_tracks['track_id'].min()
+            track_counts = filtered_tracks.groupby('track_id').size()
+            max_points_track_id = track_counts.idxmax()
+            max_points = track_counts.max()
+            print(f"Track ID с максимальным числом точек: {max_points_track_id}")
+            print(f"Максимальное количество точек: {max_points}")
+            max_points_track_group = filtered_tracks[filtered_tracks['track_id'] == max_points_track_id]
+        case AnimateBy.TIME:
+            unique_time = filtered_tracks['time'].unique()
+            frames = len(unique_time)
+            print(f"📊 Найдено {frames} моментов времени для анимации.")
+            min_time = filtered_tracks['time'].min()
+            time_counts = filtered_tracks.groupby('time').size()
+            max_points = time_counts.max()
+            print(f"время с максимальным числом точек (должно быть у всех одинаково): {max_points}")
+            print(f"Максимальное количество точек: {max_points}")
+        case _:
+            raise ValueError(f"Неподдерживаемый тип анимации: {animate_by}")
     fig, ax, lines = plot_result(
         f"{anim_base_name}",
         ox_label,
@@ -96,41 +122,78 @@ def create_animation_tracks(
 
     parameters = params_config[0][1]
 
-    if show_track_numbers:
-        text = ax.set_title(f'Номер трека: {min_track_id}', fontsize=12)
+    if show_track_numbers_or_time:
+        match animate_by:
+            case AnimateBy.TRACK_ID:
+                text = ax.set_title(f'Номер трека: {min_track_id}', fontsize=12)
+            case AnimateBy.TIME:
+                text = ax.set_title(f'Время: {min_time}', fontsize=12)
+            case _:
+                raise ValueError(f"Неподдерживаемый тип анимации: {animate_by}")
+
 
     def animate(i):
         # print('animation i is', i)
         # current_track_id = min_track_id + i
-        current_track_id = unique_tracks[i]
-        current_track_df = filtered_tracks[filtered_tracks['track_id'] == current_track_id]
 
-        if current_track_df.empty:
-            print(f"⚠️ Нет данных для трека {current_track_id}")
-            return lines + [text]
-        for line, param in zip(lines, parameters):
-            x_data = current_track_df['time_local'].values
-            y_data = current_track_df[param].values
-            # Дополняем данные до max_points (если нужно)
-            if len(x_data) < max_points:
-                x_padded = np.pad(x_data, (0, max_points - len(x_data)), mode='edge')
-                y_padded = np.pad(y_data, (0, max_points - len(y_data)), mode='edge')
-                # print(x_padded)
-                # print(y_padded)
-            else:
-                x_padded = x_data[:max_points]
-                y_padded = y_data[:max_points]
-                # print(x_padded)
-                # print(y_padded)
-            line.set_data(x_padded, y_padded)
-        if show_track_numbers:
-            text.set_text(f'Номер трека: {current_track_id}')
+        match animate_by:
+            case AnimateBy.TRACK_ID:
+                current_track_id = unique_tracks[i]
+                current_track_df = filtered_tracks[filtered_tracks['track_id'] == current_track_id]
+                if current_track_df.empty:
+                    print(f"⚠️ Нет данных для трека {current_track_id}")
+                    return lines + [text]
+                for line, param in zip(lines, parameters):
+                    x_data = current_track_df['time_local'].values
+                    y_data = current_track_df[param].values
+                    # Дополняем данные до max_points (если нужно)
+                    if len(x_data) < max_points:
+                        x_padded = np.pad(x_data, (0, max_points - len(x_data)), mode='edge')
+                        y_padded = np.pad(y_data, (0, max_points - len(y_data)), mode='edge')
+                        # print(x_padded)
+                        # print(y_padded)
+                    else:
+                        x_padded = x_data[:max_points]
+                        y_padded = y_data[:max_points]
+                        # print(x_padded)
+                        # print(y_padded)
+                    line.set_data(x_padded, y_padded)
+                if show_track_numbers_or_time:
+                    text.set_text(f'Номер трека: {current_track_id}')
+
+            case AnimateBy.TIME:
+                current_time = unique_time[i]
+                current_time_df = filtered_tracks[filtered_tracks['time'] == current_time]
+                if current_time_df.empty:
+                    print(f"⚠️ Нет данных для времени {current_time}")
+                    return lines + [text]
+                for line, param in zip(lines, parameters):
+                    x_data = current_time_df['X'].values
+                    y_data = current_time_df[param].values
+                    # Дополняем данные до max_points (если нужно)
+                    if len(x_data) < max_points:
+                        x_padded = np.pad(x_data, (0, max_points - len(x_data)), mode='edge')
+                        y_padded = np.pad(y_data, (0, max_points - len(y_data)), mode='edge')
+                        # print(x_padded)
+                        # print(y_padded)
+                    else:
+                        x_padded = x_data[:max_points]
+                        y_padded = y_data[:max_points]
+                        # print(x_padded)
+                        # print(y_padded)
+                    line.set_data(x_padded, y_padded)
+                if show_track_numbers_or_time:
+                    time_text = f"Время: {current_time:.4f}"
+                    # text.set_fontfamily('monospace')
+                    text.set_text(time_text)
+            case _:
+                raise ValueError(f"Неподдерживаемый тип анимации: {animate_by}")
         return lines + [text]
 
     ani = animation.FuncAnimation(
         fig,
         animate,
-        frames=len(unique_tracks),
+        frames=frames,
         interval=1000/fps,
         blit=True,
         repeat=True
@@ -276,8 +339,8 @@ def plot_result(
         :param horizontal_lines: Добавить горизонтальные линии.
         """
     # fig, ax = plt.subplots(figsize=(10, 6))
-    # fig, ax = plt.subplots(figsize=(7, 3))
-    fig, ax = plt.subplots(figsize=(9, 3.5))
+    fig, ax = plt.subplots(figsize=(7, 3))
+    # fig, ax = plt.subplots(figsize=(7, 4))
 
     if animation:
         lines = []
@@ -396,15 +459,15 @@ def plot_result(
         elif axis_format == 'float':
             return f'{value:.2f}'.replace('.', ',')
         elif axis_format == 'scientific':
-            return f'{value:.3e}'.replace('.', ',').replace('e+0', 'e').replace('e-0', 'e-').replace('e', '·10^')
+            return f'{value:.2e}'.replace('.', ',').replace('e+0', 'e').replace('e-0', 'e-').replace('e', '·10^')
         else:  # auto
             if 1e-3 <= abs(value) < 1e5:
                 if value.is_integer():
                     return f'{int(value)}'
                 else:
-                    return f'{value:.3f}'.replace('.', ',')
+                    return f'{value:.2f}'.replace('.', ',')
             else:
-                return f'{value:.3e}'.replace('.', ',').replace('e+0', ' e').replace('e-0', ' e-').replace('e+', ' e+').replace('e-', ' e-')
+                return f'{value:.1e}'.replace('.', ',').replace('e+0', ' e').replace('e-0', ' e-').replace('e+', ' e+').replace('e-', ' e-')
 
     x_format = 'auto'
     y_format = 'auto'

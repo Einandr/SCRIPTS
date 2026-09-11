@@ -38,7 +38,7 @@ path = r'C:\Users\YA\Desktop\СУТКИ\Контрагенты\ДОГОВОРЫ_
 excel_file = 'Юрики.xlsx'
 
 # сокращенное наименование организации контрагента
-name_short = 'ООО «А100»'
+name_short = 'ООО «Бугатти Мьюзик»'
 
 
 # name_short = 'ИП Мельник М.М.'
@@ -847,8 +847,10 @@ for index, row in df_services_data.iterrows():
 (paragraph := row_cells[3].paragraphs[0]).add_run(unit); paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 row_cells[3].vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
-
-widths = [Cm(0.75), Cm(9.0), Cm(2.0), Cm(2.2), Cm(2.5), Cm(3.0)]
+if len(df_services_data) >= 10:
+    widths = [Cm(1.0), Cm(8.75), Cm(2.0), Cm(2.2), Cm(2.5), Cm(3.0)]
+else:
+    widths = [Cm(0.75), Cm(9.0), Cm(2.0), Cm(2.2), Cm(2.5), Cm(3.0)]
 
 table.autofit = False
 
