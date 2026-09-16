@@ -25,7 +25,8 @@ from configparser import ConfigParser
 
 from utils import material, output, terra_results, mixture_reference
 
-
+import locale
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
 
 
@@ -42,8 +43,7 @@ file_MPL = 'MPL_constants.txt'
 # ПЕРЕХОД НА НОВЫЙ ОБЩИЙ ТЕРРА ФАЙЛ
 path_data = r'D:\YASIM\!Chemical_Kinetics'
 # terra_props = 'props_TERRA.txt'
-# terra_props = 'terra_props_full_2013.csv'
-terra_props = 'terra_props_full_old.csv'
+terra_props = 'terra_props_full_2013_YA_corrected_condenced_needed_fro_MPL.csv'
 
 path_run = ''.join((path, '/', dir_run))
 Path(path_run).mkdir(parents=True, exist_ok=True)
@@ -241,7 +241,7 @@ else:
 def calculate_reactions(_fuel_mixture, _oxidizer, _products):
     mf_products = {}
     K_mass = {}
-    K_mass_mixture = 0
+    K_mass_mixture = 0.0
     for key, value in _fuel_mixture.items():
         _fuel = re.sub(r'\(c\)', '', key)
         for key2, value2 in _products.items():
@@ -260,6 +260,8 @@ def calculate_reactions(_fuel_mixture, _oxidizer, _products):
                     else:
                         mf_products[p] = mf_prod[p] * value
                 K_mass_mixture += K_mass[key2] * value
+    mf_products = {key: float(value) for key, value in mf_products.items()}
+    K_mass_mixture = float(K_mass_mixture)
     return mf_products, K_mass_mixture
 
 
@@ -477,9 +479,9 @@ def interpolated_value(x_eval, input_dict):
 
 
 # oxidizer molar mass [kg/mol]
-g_oxidizer_M = gas_material.get_mu(g_mass_fractions_pure_oxidizer)/1000
+g_oxidizer_M = gas_material.get_mu(g_mass_fractions_pure_oxidizer)
 # gaseous volatile component molar mass [kg/mol]
-g_vol_M = gas_material.get_mu(g_mass_fractions_pure_volatile)/1000
+g_vol_M = gas_material.get_mu(g_mass_fractions_pure_volatile)
 
 
 
@@ -499,7 +501,7 @@ p_mass_fractions_pure_volatile = {'volatile': 1, 'combustible': 0, 'inert': 0}
 p_mass_fractions_pure_inert = {'volatile': 0, 'combustible': 0, 'inert': 1}
 
 # particle volatile component molar mass [kg/mol] (may use g_vol_M as well)
-p_vol_M = dispersed_material.get_mu(p_mass_fractions_pure_volatile)/1000
+p_vol_M = dispersed_material.get_mu(p_mass_fractions_pure_volatile)
 
 # particle density for pure combustible, volatile and inert component [kg/m^3]
 p_comb_density = dispersed_material.get_density(p_mass_fractions_pure_combustible)
@@ -518,16 +520,16 @@ p_vol_Pb = 100000
 
 
 # particle components formation heat [J/kg] at 298.15 K
-p_comb_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_combustible)/dispersed_material.get_mu(p_mass_fractions_pure_combustible) * 1000
-p_vol_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_volatile)/dispersed_material.get_mu(p_mass_fractions_pure_volatile) * 1000
-p_inert_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_inert)/dispersed_material.get_mu(p_mass_fractions_pure_inert) * 1000
+p_comb_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_combustible)/dispersed_material.get_mu(p_mass_fractions_pure_combustible)
+p_vol_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_volatile)/dispersed_material.get_mu(p_mass_fractions_pure_volatile)
+p_inert_H0 = dispersed_material.get_formation_heat(p_mass_fractions_pure_inert)/dispersed_material.get_mu(p_mass_fractions_pure_inert)
 
 
 # gas components formation heat [J/kg] at 298.15 K
-g_GV_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_volatile)/gas_material.get_mu(g_mass_fractions_pure_volatile) * 1000
-g_O2_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_oxidizer)/gas_material.get_mu(g_mass_fractions_pure_oxidizer) * 1000
-g_CPCP_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_CPCP)/gas_material.get_mu(g_mass_fractions_pure_CPCP) * 1000
-g_CPCF_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_CPCF)/gas_material.get_mu(g_mass_fractions_pure_CPCF) * 1000
+g_GV_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_volatile)/gas_material.get_mu(g_mass_fractions_pure_volatile)
+g_O2_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_oxidizer)/gas_material.get_mu(g_mass_fractions_pure_oxidizer)
+g_CPCP_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_CPCP)/gas_material.get_mu(g_mass_fractions_pure_CPCP)
+g_CPCF_H0 = gas_material.get_formation_heat(g_mass_fractions_pure_CPCF)/gas_material.get_mu(g_mass_fractions_pure_CPCF)
 
 
 
@@ -569,7 +571,7 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     # gas mass fraction of GV volatile
     g_Y_GV = g_mass_fractions['volatile']
     # gas mixture molar mass [kg/mol]
-    g_M = gas_material.get_mu(g_mass_fractions) / 1000
+    g_M = gas_material.get_mu(g_mass_fractions)
 
     # particle mass fraction of combustible component
     p_Y_comb = p_mass_fractions['combustible']
@@ -701,7 +703,7 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
             Y_surf_vol = 0
 
             # Evaporation possibility check
-            print('check evaporation possibility p_vol_saturation_pressure, g_pressure * g_Y_GV * g_vol_M / g_M ', p_vol_saturation_pressure, g_pressure * g_Y_GV * g_vol_M / g_M)
+            print('check evaporation possibility p_vol_saturation_pressure, g_pressure * g_Y_GV * g_vol_M / g_M ', p_vol_saturation_pressure, g_pressure * g_Y_GV * g_vol_M / g_M, g_pressure, g_Y_GV, g_vol_M, g_M)
 
             if p_vol_saturation_pressure > g_pressure * g_Y_GV * g_vol_M / g_M and p_vol_saturation_pressure > 1E-10:
                 while abs(X_surf_vol - X_surf_vol_) > 0.001 * X_surf_vol:
@@ -835,13 +837,18 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     # combustible component mass change rate [kg/s]
     p_dmdt_comb = p_surface_area * p_surface_area_comb_fraction * G_comb
     # volatile component mass change rate [kg/s]
+
     p_dmdt_vol = p_surface_area * p_surface_area_vol_fraction * G_vol
 
     # ADDED CHECKS FOR TIME STEP WHEN ALL COMBUSTIBLE OR VOLATILE FRACTIONS DISAPPEARS
     # particle combustible component mass change [kg]
     p_dm_comb = min(p_dmdt_comb * dt, p_mass_comb)
+
     # particle volatile component mass change [kg]
+    print(f"DEBUG EVAPORATION: {p_dmdt_vol=}, {dt=}, {p_mass_vol=}")
     p_dm_vol = min(p_dmdt_vol * dt, p_mass_vol)
+    print(f"DEBUG EVAPORATION: {p_dm_vol=}")
+
 
     # particle new mass of combustible/volatile/inert component [kg]
     p_mass_comb_new = p_mass_comb - p_dm_comb
@@ -1060,11 +1067,12 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     p_Q_after_evaporation_limit = p_mass_after_evaporation * dispersed_material.get_enthalpy(p_mass_fractions_after_evaporation, T_evap_low_limit)
     print('evaporation low temperature limit: T_evap_low_limit, p_Q_after_evaporation_limit', T_evap_low_limit, p_Q_after_evaporation_limit)
     # checking for possible cooling below low temperature limit
-    if (p_Q + p_dQ_vol_evap <= p_Q_after_evaporation_limit):
+    if (p_Q + p_dQ_vol_evap <= p_Q_after_evaporation_limit) and (p_Q > p_Q_after_evaporation_limit):
         print('WARNING - volatile component evaporative cooling reaches low temperature limit')
         p_dQ_vol_evap = p_Q_after_evaporation_limit - p_Q
         # MASS recalculation and redefinition
         p_dm_vol = p_dQ_vol_evap / dH_vol_evap
+        p_dm_vol = min(p_dm_vol, p_mass_vol)
         p_mass_vol_new = p_mass_vol - p_dm_vol
         p_mass_new = p_mass_comb_new + p_mass_vol_new + p_mass_inert_new
         p_Y_vol_new = p_mass_vol_new / p_mass_new
@@ -1137,7 +1145,7 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     # gas initial mass nitrogen [kg]
     g_m_nitrogen = g_mass_fractions['nitrogen'] * g_mass
     # gas initial mass volatile component [kg]
-    g_m_vilatile = g_mass_fractions['volatile'] * g_mass
+    g_m_volatile = g_mass_fractions['volatile'] * g_mass
     # gas initial mass preliminary combustion products (NO NEED FOR NOW) [kg]
     g_m_CPCP = g_mass_fractions['CPCP'] * g_mass
     # gas initial mass final combustion products [kg]
@@ -1156,7 +1164,7 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     # gas new mass of nitrogen [kg]
     g_m_nitrogen_new = g_m_nitrogen
     # gas new mass of volatile component [kg]
-    g_m_volatile_new = g_m_vilatile + p_dm_vol * n_particles
+    g_m_volatile_new = g_m_volatile + p_dm_vol * n_particles
     # gas new mass of preliminary combustion products (NO NEED FOR NOW) [kg]
     g_m_CPCP_new = g_m_CPCP
     # gas new mass of final combustion products [kg]
@@ -1172,7 +1180,7 @@ def make_step(_p_mass_fractions, _p_temperature, _p_diameter, _g_mass_fractions,
     if g_mass_fractions_new['oxidizer'] < Y_min_g_limit_fraction:
         g_mass_fractions_new['oxidizer'] = 0
     # gas new molar mass [kg/mol]
-    g_M = gas_material.get_mu(g_mass_fractions_new) / 1000
+    g_M = gas_material.get_mu(g_mass_fractions_new)
     if not separate_heat_fluxes:
         p_temperature_after_evaporation = p_temperature
 
@@ -1912,6 +1920,13 @@ plot_result(['q_comb_prelim[W/m^2]', 'q_unlim_comb_prelim[W/m^2]', 'q_comb_final
 plot_result(['p_temperature[K]', 'p_temperature_after_evaporation[K]', 'p_temperature_after_combustion[K]', 'p_temperature_new[K]', 'g_temperature[K]', 'g_temperature_new[K]'], ['-', '-', '-', '-', '-', '-'], ['температура частицы', 'температура частицы после испарения', 'температура частицы после горения', 'температура частицы новая', 'температура газа', 'температура газа новая'], r'$T\ (K)$', '21_pg_T')
 
 
+def replace_dots_with_commas(value):
+    """Заменяет точки на запятые в числовых значениях."""
+    if isinstance(value, (int, float)) and not pd.isna(value):
+        return str(value).replace('.', ',')
+    return value
+
+
 columns_initial_conditions = {'dt[s]': dt,
                               't_end[s]': t_end,
                               'p_d[mkm]': p_start_diameter*1000000,
@@ -1922,23 +1937,26 @@ columns_initial_conditions = {'dt[s]': dt,
                               'g_T[K]': g_start_temperature,
                               'g_P[Pa]': g_pressure,
                               'g_v[m/s]': g_slip_velocity,
+                              'g_cell_length[m]': g_cell_length,
+                              'n_particles': n_particles,
                               'g_Y_oxidizer': gas_start_mass_fractions['oxidizer'],
                               'g_Y_volatile': gas_start_mass_fractions['volatile'],
                               'g_Y_nitrogen': gas_start_mass_fractions['nitrogen'],
                               'g_Y_CPCP': gas_start_mass_fractions['CPCP'],
                               'g_Y_CPCF': gas_start_mass_fractions['CPCF'],
-                              'p_enthalpy[K]': p_enthalpy,
+                              'p_enthalpy[J/kg]': p_enthalpy,
                               'K_mass_preliminary': K_mass_preliminary,
                               'K_mass_final': K_mass_final,
-                              'p_comb_H0': p_comb_H0,
-                              'p_vol_H0': p_vol_H0,
-                              'p_inert_H0': p_inert_H0,
-                              'g_GV_H0': g_GV_H0,
-                              'g_O2_H0': g_O2_H0,
-                              'g_CPCP_H0': g_CPCP_H0,
-                              'g_CPCF_H0': g_CPCF_H0
+                              'p_comb_H0[J/kg]': p_comb_H0,
+                              'p_vol_H0[J/kg]': p_vol_H0,
+                              'p_inert_H0[J/kg]': p_inert_H0,
+                              'g_GV_H0[J/kg]': float(g_GV_H0),
+                              'g_O2_H0[J/kg]': float(g_O2_H0),
+                              'g_CPCP_H0[J/kg]': float(g_CPCP_H0),
+                              'g_CPCF_H0[J/kg]': float(g_CPCF_H0)
                               }
 data_initial_conditions = pd.DataFrame.from_dict(columns_initial_conditions, orient='index', columns=['variable'])
+# data_initial_conditions = data_initial_conditions.applymap(replace_dots_with_commas)
 
 columns_results = {}
 if t_complete_volatile_evaporation is not None:
@@ -1950,12 +1968,66 @@ if t_complete_oxidizer_consumption is not None:
 
 writer = pd.ExcelWriter(''.join(('result', '.xlsx')), engine="xlsxwriter")
 result.to_excel(writer, index=False, sheet_name='result')
+# workbook = writer.book
+# number_format = workbook.add_format({'num_format': '#,##0.00'})
+#
 data_initial_conditions.to_excel(writer, index=True, sheet_name='initial')
+# for sheet_name in writer.sheets:
+#     worksheet = writer.sheets[sheet_name]
+#     worksheet.set_column('A:Z', None, number_format)
+# worksheet = writer.sheets['initial']
+# for idx, col in enumerate(data_initial_conditions.columns):
+#     max_len = max(data_initial_conditions[col].astype(str).map(len).max(), len(str(col))) + 2
+#     worksheet.set_column(idx, idx, max_len)
+
+
+
+
 
 pd.DataFrame.from_dict(mf_products_preliminary, orient='index', columns=['variable']).to_excel(writer, index=True, sheet_name='mf_products_preliminary')
 pd.DataFrame.from_dict(mf_products_final, orient='index', columns=['variable']).to_excel(writer, index=True, sheet_name='mf_products_final_full')
 pd.DataFrame.from_dict(g_CPCF, orient='index', columns=['variable']).to_excel(writer, index=True, sheet_name='mf_products_final')
 pd.DataFrame.from_dict(columns_results, orient='index', columns=['variable']).to_excel(writer, index=True, sheet_name='output_averaged')
+
+
+
+
+# Настраиваем ширину столбцов для всех листов
+for sheet_name in writer.sheets:
+    worksheet = writer.sheets[sheet_name]
+
+    # Получаем DataFrame для текущего листа
+    if sheet_name == 'result':
+        df = result
+        index_col = False
+    elif sheet_name == 'initial':
+        df = data_initial_conditions
+        index_col = True
+    elif sheet_name == 'mf_products_preliminary':
+        df = pd.DataFrame.from_dict(mf_products_preliminary, orient='index', columns=['variable'])
+        index_col = True
+    elif sheet_name == 'mf_products_final_full':
+        df = pd.DataFrame.from_dict(mf_products_final, orient='index', columns=['variable'])
+        index_col = True
+    elif sheet_name == 'mf_products_final':
+        df = pd.DataFrame.from_dict(g_CPCF, orient='index', columns=['variable'])
+        index_col = True
+    elif sheet_name == 'output_averaged':
+        df = pd.DataFrame.from_dict(columns_results, orient='index', columns=['variable'])
+        index_col = True
+
+    # Настраиваем ширину столбцов
+    for idx, col in enumerate(df.columns):
+        max_len = max(
+            df[col].astype(str).map(len).max(), len(str(col))) + 2
+        worksheet.set_column(idx + (1 if index_col else 0), idx + (1 if index_col else 0), max_len)
+
+    if index_col:
+            max_index_len = max(
+                df.index.astype(str).map(len).max(),
+                len(str(df.index.name)) if df.index.name else 0
+            ) + 2
+            worksheet.set_column(0, 0, max_index_len)
 
 # mf_products_preliminary.to_excel(writer, index=True, sheet_name='mf_products_preliminary')
 # mf_products_final.to_excel(writer, index=True, sheet_name='mf_products_final_full')
@@ -1964,5 +2036,5 @@ writer.close()
 
 
 
-print('OOP debug')
+print('All results exported to EXCEL')
 
